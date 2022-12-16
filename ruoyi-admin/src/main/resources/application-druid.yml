@@ -1,0 +1,26 @@
+# 数据源配置,动态数据源
+spring:
+  datasource:
+    dynamic:
+
+      primary: master
+      strict: false
+      datasource:
+
+        master:
+          url: jdbc:mysql://47.106.20.70:3308/ynlk_ry?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+          username: root
+          password: ynlk2021
+          driver-class-name: com.mysql.cj.jdbc.Driver
+
+        slave_1:
+          url: jdbc:mysql://47.106.20.70:3308/iotx_data_center?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+          username: root
+          password: ynlk2021
+          driver-class-name: com.mysql.cj.jdbc.Driver
+
+        slave_2:
+          url: jdbc:mysql://47.106.20.70:3308/ynlk_kpi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+          username: root
+          password: ynlk2021
+          driver-class-name: com.mysql.cj.jdbc.Driver

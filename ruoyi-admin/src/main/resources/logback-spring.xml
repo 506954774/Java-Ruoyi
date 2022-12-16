@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+	<!-- 日志存放的目录 -->
+	<property
+	name="logging.file.path"  value="/root/ruoyi/log"></property>
+	<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+	<conversionRule conversionWord="wex"
+					converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+	<conversionRule conversionWord="wEx"
+					converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+	<!-- 彩色日志格式 -->
+	<property name="CONSOLE_LOG_PATTERN"
+			  value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+	<!--输出到控制台-->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<!--过滤trace日志到控制台-->
+		<filter class="com.plumelog.logback.util.FilterSyncLogger">
+			<level></level>
+		</filter>
+		<encoder>
+			<Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+			<!-- 设置字符集 -->
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	<!-- 输出到文件 -->
+	<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${logging.file.path}/logs/plumelog-demo.log.%d{yyyy-MM-dd}.log</FileNamePattern>
+			<MaxHistory>30</MaxHistory>
+		</rollingPolicy>
+		<encoder>
+			<Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+			<!-- 设置字符集 -->
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<!-- Log file debug output -->
+	<appender name="debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${logging.file.path}/debug/debug.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${logging.file.path}/debug/%d{yyyy-MM, aux}/debug.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<maxFileSize>50MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%date [%thread] %-5level [%logger{50}] %file:%line - %msg%n</pattern>
+		</encoder>
+	</appender>
+	<!-- Log file error output -->
+	<appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${logging.file.path}/error/error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${logging.file.path}/error/%d{yyyy-MM}/error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<maxFileSize>50MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%date [%thread] %-5level [%logger{50}] %file:%line - %msg%n</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+	</appender>
+
+	<!-- 环境配置 -->
+	<springProperty scope="context" name="plumelog.appName" source="plumelog.appName"/>
+	<springProperty scope="context" name="plumelog.redisHost" source="plumelog.redisHost"/>
+	<springProperty scope="context" name="plumelog.redisPort" source="plumelog.redisPort"/>
+	<springProperty scope="context" name="plumelog.redisAuth" source="plumelog.redisAuth"/>
+	<springProperty scope="context" name="plumelog.redisDb" source="plumelog.redisDb"/>
+	<springProperty scope="context" name="plumelog.env" source="spring.profiles.active"/>
+	<!-- 输出plumelog -->
+	<appender name="plumelog" class="com.plumelog.logback.appender.RedisAppender">
+		<appName>${plumelog.appName}</appName>
+		<redisHost>${plumelog.redisHost}</redisHost>
+		<redisAuth>${plumelog.redisAuth}</redisAuth>
+		<redisDb>${plumelog.redisDb}</redisDb>
+<!--
+		<appName>zupms</appName>
+		<redisHost>10.196.47.54:6379</redisHost>
+		<redisAuth>q1w2e3r4</redisAuth>
+		<redisDb>11</redisDb>-->
+
+	<!--	<appName>zupms</appName>
+		<redisHost>8.134.18.217:6379</redisHost>
+		<redisAuth>Yn-Link@9R9T0$HJ</redisAuth>
+		<redisDb>11</redisDb>-->
+		<env>dev</env>
+	</appender>
+	<!-- 配置日志输出，只输出info，只保留控制台和plumelog输出-->
+	<!-- 正常开发环境本地，只输出到控制台，测试环境只输出到plumelog,生产环境输出到本地文件plumelog,因为有plumelog加持本地文件就保留3天即可-->
+	<!-- 这些都可以根据环境配置不同加载不同的ref-->
+	<root level="info">
+		<!--输出到控制台-->
+		<appender-ref ref="CONSOLE"/>
+		<!-- 输出到文件 -->
+		<appender-ref ref="file"/>
+		<!-- 输出plumelog -->
+		<appender-ref ref="plumelog"/>
+	</root>
+
+	<!--nacos 心跳 INFO 屏蔽-->
+	<logger name="com.alibaba.nacos" level="OFF">
+		<appender-ref ref="error"/>
+	</logger>
+
+	<springProfile name="dev">
+		<root level="INFO">
+			<appender-ref ref="CONSOLE" />
+		</root>
+	</springProfile>
+	<springProfile name="test">
+		<root level="INFO">
+			<appender-ref ref="FILE" />
+		</root>
+	</springProfile>
+	<springProfile name="prod">
+		<root level="INFO">
+			<appender-ref ref="file" />
+		</root>
+	</springProfile>
+
+</configuration>
